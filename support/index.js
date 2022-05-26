@@ -1,5 +1,5 @@
-import './commands';
-import { configure } from '@testing-library/cypress';
+require('./commands');
+const { configure } = require('@testing-library/cypress');
 
 configure({ testIdAttribute: 'data-testid' });
 
@@ -24,8 +24,8 @@ Cypress.on('window:before:load', win => {
   });
 });
 
-before(async () => {
+before(() => {
   if (!Cypress.env('SKIP_METAMASK_SETUP')) {
-    await cy.setupMetamask();
+    cy.setupMetamask();
   }
 });

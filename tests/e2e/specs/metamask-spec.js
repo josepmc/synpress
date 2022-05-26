@@ -4,7 +4,7 @@ describe('Metamask', () => {
     it(`setupMetamask should finish metamask setup using secret words`, () => {
       cy.setupMetamask(
         'shuffle stay hair student wagon senior problem drama parrot creek enact pluck',
-        'kovan',
+        'goerli',
         'Tester@1234',
       ).then(setupFinished => {
         expect(setupFinished).to.be.true;
@@ -24,7 +24,7 @@ describe('Metamask', () => {
     });
     it(`getNetwork should return network by default`, () => {
       cy.getNetwork().then(network => {
-        expect(network.networkName).to.be.equal('kovan');
+        expect(network.networkName).to.be.equal('goerli');
         expect(network.networkId).to.be.equal(42);
         expect(network.isTestnet).to.be.true;
       });
@@ -51,7 +51,7 @@ describe('Metamask', () => {
       });
     });
     it(`changeMetamaskNetwork should change network using pre-defined network`, () => {
-      cy.changeMetamaskNetwork('kovan').then(networkChanged => {
+      cy.changeMetamaskNetwork('goerli').then(networkChanged => {
         expect(networkChanged).to.be.true;
       });
       cy.get('#network').contains('42');
@@ -59,7 +59,7 @@ describe('Metamask', () => {
     });
     it(`getNetwork should return valid network after changing a network`, () => {
       cy.getNetwork().then(network => {
-        expect(network.networkName).to.be.equal('kovan');
+        expect(network.networkName).to.be.equal('goerli');
         expect(network.networkId).to.be.equal(42);
         expect(network.isTestnet).to.be.true;
       });
@@ -70,7 +70,7 @@ describe('Metamask', () => {
       });
       cy.get('#network').contains('137');
       cy.get('#chainId').contains('0x89');
-      cy.changeMetamaskNetwork('kovan');
+      cy.changeMetamaskNetwork('goerli');
     });
     it(`importMetamaskAccount should import new account using private key`, () => {
       cy.importMetamaskAccount(

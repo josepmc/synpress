@@ -1,5 +1,5 @@
-import '@testing-library/cypress/add-commands';
-import 'cypress-wait-until';
+require('@testing-library/cypress/add-commands');
+require('cypress-wait-until');
 
 // puppeteer commands
 
@@ -58,9 +58,7 @@ Cypress.Commands.add('switchMetamaskAccount', accountNameOrAccountNumber => {
 });
 
 Cypress.Commands.add('getMetamaskWalletAddress', () => {
-  cy.task('getMetamaskWalletAddress').then(address => {
-    return address;
-  });
+  return cy.task('getMetamaskWalletAddress');
 });
 
 Cypress.Commands.add('activateCustomNonceInMetamask', () => {
@@ -148,18 +146,22 @@ Cypress.Commands.add('unlockMetamask', (password = 'Tester@1234') => {
 });
 
 Cypress.Commands.add('fetchMetamaskWalletAddress', () => {
-  cy.task('fetchMetamaskWalletAddress').then(address => {
-    return address;
-  });
+  return cy.task('fetchMetamaskWalletAddress');
 });
 
 Cypress.Commands.add(
   'setupMetamask',
-  (secretWordsOrPrivateKey, network, password = 'Tester@1234') => {
+  (
+    secretWordsOrPrivateKey,
+    network,
+    password = 'Tester@1234',
+    defaultAction = 'ignore',
+  ) => {
     return cy.task('setupMetamask', {
       secretWordsOrPrivateKey,
       network,
       password,
+      defaultAction,
     });
   },
 );
@@ -201,62 +203,57 @@ Cypress.Commands.add('etherscanWaitForTxSuccess', txid => {
 
 // helper commands
 
-Cypress.Commands.add('waitForResources', (resources = []) => {
-  const globalTimeout = 30000;
-  const resourceCheckInterval = 2000;
-  const idleTimesInit = 3;
-  let idleTimes = idleTimesInit;
-  let resourcesLengthPrevious;
-  let timeout;
+Cypress.Commands.add(
+  'waitForResources',
+  (resources = [], globalTimeout = 30000) => {
+    const resourceCheckInterval = 2000;
+    const idleTimesInit = 3;
+    let idleTimes = idleTimesInit;
+    let resourcesLengthPrevious;
+    let timeout;
+    if (!resources) resources = [];
 
-  return new Cypress.Promise((resolve, reject) => {
-    const checkIfResourcesLoaded = () => {
-      const resourcesLoaded = cy
-        .state('window')
-        .performance.getEntriesByType('resource')
-        .filter(r => !['script', 'xmlhttprequest'].includes(r.initiatorType));
+    return new Cypress.Promise((resolve, reject) => {
+      const checkIfResourcesLoaded = () => {
+        const resourcesLoaded = cy
+          .state('window')
+          .performance.getEntriesByType('resource')
+          .filter(r => !['script', 'xmlhttprequest'].includes(r.initiatorType));
 
-      const allFilesFound = resources.every(resource => {
-        const found = resourcesLoaded.filter(resourceLoaded => {
-          return resourceLoaded.name.includes(resource.name);
+        const allFilesFound = resources.every(resource => {
+          const found = resourcesLoaded.filter(resourceLoaded => {
+            return resourceLoaded.name.includes(resource.name);
+          });
+          if (found.length === 0) {
+            return false;
+          }
+          return !resource.number || found.length >= resource.number;
         });
-        if (found.length === 0) {
-          return false;
+
+        if (allFilesFound) {
+          if (resourcesLoaded.length === resourcesLengthPrevious) {
+            idleTimes--;
+          } else {
+            idleTimes = idleTimesInit;
+            resourcesLengthPrevious = resourcesLoaded.length;
+          }
         }
-        return !resource.number || found.length >= resource.number;
-      });
-
-      if (allFilesFound) {
-        if (resourcesLoaded.length === resourcesLengthPrevious) {
-          idleTimes--;
-        } else {
-          idleTimes = idleTimesInit;
-          resourcesLengthPrevious = resourcesLoaded.length;
+        if (!idleTimes) {
+          resolve();
+          return;
         }
-      }
-      if (!idleTimes) {
-        resolve();
-        return;
-      }
 
-      timeout = setTimeout(checkIfResourcesLoaded, resourceCheckInterval);
-    };
+        timeout = setTimeout(checkIfResourcesLoaded, resourceCheckInterval);
+      };
 
-    checkIfResourcesLoaded();
-    setTimeout(() => {
-      reject();
-      clearTimeout(timeout);
-    }, globalTimeout);
-  });
-});
-
-// overwrite default cypress commands
-if (!Cypress.env('SKIP_RESOURCES_WAIT')) {
-  Cypress.Commands.overwrite('visit', (originalFn, url, options) => {
-    originalFn(url, options);
-    return cy.waitForResources();
-  });
-}
+      checkIfResourcesLoaded();
+      setTimeout(() => {
+        reject();
+        clearTimeout(timeout);
+      }, globalTimeout);
+    });
+  },
+);
 
 Cypress.Commands.add(
   'topIsWithinViewport',

@@ -29,7 +29,7 @@ const {
 const {
   confirmationPageElements,
 } = require('../pages/metamask/confirmation-page');
-const { setNetwork, getNetwork } = require('../helpers');
+const { setNetwork, getNetwork, getEnv } = require('../helpers');
 
 let walletAddress;
 let switchBackToCypressWindow;
@@ -74,7 +74,34 @@ module.exports = {
     await module.exports.closePopup();
     return true;
   },
+  lock: async () => {
+    await module.exports.fixBlankPage();
+    await puppeteer.waitAndClick(mainPageElements.accountMenu.button);
+    await puppeteer.waitAndClick(mainPageElements.accountMenu.lockButton);
+    return true;
+  },
   importWallet: async (secretWords, password) => {
+    if (
+      (await puppeteer.metamaskWindow().$(unlockPageElements.unlockPage)) !==
+      null
+    ) {
+      await puppeteer.waitAndClick(unlockPageElements.importButton);
+      await puppeteer.waitAndType(
+        unlockPageElements.secretWordsInput,
+        secretWords,
+      );
+      await puppeteer.waitAndType(
+        unlockPageElements.passwordInputImport,
+        password,
+      );
+      await puppeteer.waitAndType(
+        unlockPageElements.confirmPasswordInputImport,
+        password,
+      );
+      await puppeteer.waitAndClick(unlockPageElements.restoreButton);
+      await puppeteer.waitFor(mainPageElements.walletOverview);
+      return true;
+    }
     await puppeteer.waitAndClick(firstTimeFlowPageElements.importWalletButton);
     await puppeteer.waitAndClick(metametricsPageElements.optOutAnalyticsButton);
     await puppeteer.waitAndType(
@@ -247,18 +274,14 @@ module.exports = {
   addNetwork: async network => {
     await switchToMetamaskIfNotActive();
 
-    if (
-      process.env.NETWORK_NAME &&
-      process.env.RPC_URL &&
-      process.env.CHAIN_ID
-    ) {
+    if (getEnv('NETWORK_NAME') && getEnv('RPC_URL') && getEnv('CHAIN_ID')) {
       network = {
-        networkName: process.env.NETWORK_NAME,
-        rpcUrl: process.env.RPC_URL,
-        chainId: process.env.CHAIN_ID,
-        symbol: process.env.SYMBOL,
-        blockExplorer: process.env.BLOCK_EXPLORER,
-        isTestnet: process.env.IS_TESTNET,
+        networkName: getEnv('NETWORK_NAME'),
+        rpcUrl: getEnv('RPC_URL'),
+        chainId: getEnv('CHAIN_ID'),
+        symbol: getEnv('SYMBOL'),
+        blockExplorer: getEnv('BLOCK_EXPLORER'),
+        isTestnet: getEnv('IS_TESTNET'),
       };
     }
 
@@ -392,6 +415,8 @@ module.exports = {
   },
   confirmSignatureRequest: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       signaturePageElements.confirmSignatureRequestButton,
       notificationPage,
@@ -401,6 +426,8 @@ module.exports = {
   },
   rejectSignatureRequest: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       signaturePageElements.rejectSignatureRequestButton,
       notificationPage,
@@ -410,6 +437,8 @@ module.exports = {
   },
   confirmPermissionToSpend: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       notificationPageElements.allowToSpendButton,
       notificationPage,
@@ -419,6 +448,8 @@ module.exports = {
   },
   rejectPermissionToSpend: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       notificationPageElements.rejectToSpendButton,
       notificationPage,
@@ -428,6 +459,8 @@ module.exports = {
   },
   acceptAccess: async allAccounts => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     if (allAccounts === true) {
       await puppeteer.waitAndClick(
         notificationPageElements.selectAllCheck,
@@ -446,19 +479,21 @@ module.exports = {
     return true;
   },
   confirmTransaction: async gasConfig => {
-    const isKovanTestnet = getNetwork().networkName === 'kovan';
+    const isTestnet = getNetwork().networkName !== 'mainnet';
     // todo: remove waitForTimeout below after improving switchToMetamaskNotification
     await puppeteer.metamaskWindow().waitForTimeout(1000);
     const notificationPage = await puppeteer.switchToMetamaskNotification();
-    if (gasConfig && gasConfig.gasFee) {
+    // No notification is present
+    if (!notificationPage) return notificationPage;
+    if (isTestnet) {
       await puppeteer.waitAndSetValue(
-        gasConfig.gasFee.toString(),
+        '1',
         confirmPageElements.gasFeeInput,
         notificationPage,
       );
-    } else if (isKovanTestnet) {
+    } else if (gasConfig && gasConfig.gasFee) {
       await puppeteer.waitAndSetValue(
-        '1',
+        gasConfig.gasFee.toString(),
         confirmPageElements.gasFeeInput,
         notificationPage,
       );
@@ -491,6 +526,8 @@ module.exports = {
   },
   rejectTransaction: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       confirmPageElements.rejectButton,
       notificationPage,
@@ -500,6 +537,8 @@ module.exports = {
   },
   confirmEncryptionPublicKeyRequest: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       encryptionPublicKeyPageElements.confirmEncryptionPublicKeyButton,
       notificationPage,
@@ -510,6 +549,8 @@ module.exports = {
 
   rejectEncryptionPublicKeyRequest: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       encryptionPublicKeyPageElements.rejectEncryptionPublicKeyButton,
       notificationPage,
@@ -519,6 +560,8 @@ module.exports = {
   },
   confirmDecryptionRequest: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       decryptPageElements.confirmDecryptionRequestButton,
       notificationPage,
@@ -528,6 +571,8 @@ module.exports = {
   },
   rejectDecryptionRequest: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       decryptPageElements.rejectDecryptionRequestButton,
       notificationPage,
@@ -537,6 +582,8 @@ module.exports = {
   },
   allowToAddNetwork: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       confirmationPageElements.footer.approveButton,
       notificationPage,
@@ -545,6 +592,8 @@ module.exports = {
   },
   rejectToAddNetwork: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       confirmationPageElements.footer.cancelButton,
       notificationPage,
@@ -553,6 +602,8 @@ module.exports = {
   },
   allowToSwitchNetwork: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       confirmationPageElements.footer.approveButton,
       notificationPage,
@@ -562,6 +613,8 @@ module.exports = {
   },
   rejectToSwitchNetwork: async () => {
     const notificationPage = await puppeteer.switchToMetamaskNotification();
+    // No notification is present
+    if (!notificationPage) return notificationPage;
     await puppeteer.waitAndClick(
       confirmationPageElements.footer.cancelButton,
       notificationPage,
@@ -589,44 +642,77 @@ module.exports = {
 
     return walletAddress;
   },
-  initialSetup: async ({ secretWordsOrPrivateKey, network, password }) => {
+  initialSetup: async ({
+    secretWordsOrPrivateKey,
+    network,
+    password,
+    defaultAction = 'ignore',
+  }) => {
     const isCustomNetwork =
-      (process.env.NETWORK_NAME &&
-        process.env.RPC_URL &&
-        process.env.CHAIN_ID) ||
+      (getEnv('NETWORK_NAME') && getEnv('RPC_URL') && cy.env('CHAIN_ID')) ||
       typeof network == 'object';
-
     await puppeteer.init();
     await puppeteer.assignWindows();
     await puppeteer.assignActiveTabName('metamask');
     await puppeteer.metamaskWindow().waitForTimeout(1000);
+    let skipSetup = false;
     if (
-      (await puppeteer.metamaskWindow().$(unlockPageElements.unlockPage)) ===
+      (await puppeteer.metamaskWindow().$(mainPageElements.walletOverview)) !==
       null
     ) {
-      await module.exports.confirmWelcomePage();
-      if (secretWordsOrPrivateKey.includes(' ')) {
-        // secret words
+      switch (defaultAction) {
+        default:
+        case 'ignore': {
+          skipSetup = true;
+          break;
+        }
+        case 'lock': {
+          await module.exports.lock();
+          break;
+        }
+        case 'reset': {
+          await module.exports.resetAccount();
+          break;
+        }
+      }
+    }
+    if (!skipSetup) {
+      if (
+        (await puppeteer.metamaskWindow().$(unlockPageElements.unlockPage)) ===
+        null
+      ) {
+        await module.exports.confirmWelcomePage();
+        if (secretWordsOrPrivateKey.includes(' ')) {
+          // secret words
+          await module.exports.importWallet(secretWordsOrPrivateKey, password);
+        } else {
+          // private key
+          await module.exports.createWallet(password);
+          await module.exports.importAccount(secretWordsOrPrivateKey);
+        }
+      } else if (defaultAction === 'reset') {
         await module.exports.importWallet(secretWordsOrPrivateKey, password);
       } else {
-        // private key
-        await module.exports.createWallet(password);
-        await module.exports.importAccount(secretWordsOrPrivateKey);
+        await module.exports.unlock(password);
       }
-      if (isCustomNetwork) {
-        await module.exports.addNetwork(network);
-      } else {
-        await module.exports.changeNetwork(network);
-      }
-      walletAddress = await module.exports.getWalletAddress();
-      await puppeteer.switchToCypressWindow();
-      return true;
-    } else {
-      await module.exports.unlock(password);
-      walletAddress = await module.exports.getWalletAddress();
-      await puppeteer.switchToCypressWindow();
-      return true;
     }
+    if (isCustomNetwork) {
+      await module.exports.addNetwork(network);
+    } else {
+      await module.exports.changeNetwork(network);
+    }
+    if (
+      (await puppeteer
+        .metamaskWindow()
+        .$(mainPageElements.recoveryPhraseReminder.dialog)) !== null
+    ) {
+      await puppeteer.waitAndClick(
+        mainPageElements.recoveryPhraseReminder.button,
+      );
+    }
+    walletAddress = await module.exports.getWalletAddress();
+    await puppeteer.switchToCypressWindow();
+    return true;
   },
 };
 

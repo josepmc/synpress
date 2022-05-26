@@ -63,7 +63,7 @@ declare namespace Cypress {
     /**
      * Change network in metamask
      * @example
-     * cy.changeMetamaskNetwork('kovan')
+     * cy.changeMetamaskNetwork('goerli')
      * cy.changeMetamaskNetwork('custom network')
      * cy.changeMetamaskNetwork({networkName: 'name'})
      */
@@ -181,7 +181,7 @@ declare namespace Cypress {
      * cy.confirmMetamaskTransaction()
      * cy.confirmMetamaskTransaction({gasFee: 10, gasLimit: 1000000})
      */
-    confirmMetamaskTransaction(gasConfig : object | undefined): Chainable<Subject>;
+    confirmMetamaskTransaction(gasConfig: object | undefined): Chainable<Subject>;
     /**
      * Reject metamask transaction
      * @example
@@ -233,9 +233,9 @@ declare namespace Cypress {
     /**
      * Run the flow for metamask setup
      * @example
-     * cy.setupMetamask('secret, words, ...', 'kovan', 'password for metamask')
+     * cy.setupMetamask('secret, words, ...', 'goerli', 'password for metamask')
      * cy.setupMetamask('secret, words, ...', {networkName: 'name', rpcUrl: 'https://url', chainId: 1, symbol: 'ETH', blockExplorer: 'https://url', isTestnet: true}, 'password for metamask')
-     * cy.setupMetamask('private_key', 'kovan', 'password for metamask')
+     * cy.setupMetamask('private_key', 'goerli', 'password for metamask')
      * cy.setupMetamask('private_key', {networkName: 'name', rpcUrl: 'https://url', chainId: 1, symbol: 'ETH', blockExplorer: 'https://url', isTestnet: true}, 'password for metamask')
      */
     setupMetamask(
@@ -279,10 +279,10 @@ declare namespace Cypress {
      * @example
      * cy.waitForResources()
      * cy.waitForResources([{name:"fa-solid-900.woff2"}])
-     * cy.waitForResources([{name:"fonts.gstatic.com/s/worksans",number:2}])
+     * cy.waitForResources([{name:"fonts.gstatic.com/s/worksans",number:2}], 20000)
      */
     waitForResources(
-      resources: Array<{ name: string; number?: number }> | undefined,
+      resources: Array<{ name: string; number?: number }> | undefined, timeout?: number
     ): Chainable<Subject>;
     /**
      * Assert that element top is within viewport

@@ -20,7 +20,7 @@ module.exports = {
     return activeTabName;
   },
   init: async () => {
-    const debuggerDetails = await fetch('http://localhost:9222/json/version'); //DevSkim: ignore DS137138
+    const debuggerDetails = await fetch('http://0.0.0.0:9222/json/version'); //DevSkim: ignore DS137138
     const debuggerDetailsConfig = await debuggerDetails.json();
     const webSocketDebuggerUrl = debuggerDetailsConfig.webSocketDebuggerUrl;
 
@@ -94,6 +94,7 @@ module.exports = {
         return page;
       }
     }
+    return null;
   },
   waitFor: async (selector, page = metamaskWindow) => {
     await page.waitForFunction(

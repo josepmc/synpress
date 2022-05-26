@@ -33,8 +33,8 @@ const launcher = {
     }
     defaultArguments.push(`--browser=${arguments_.browser}`);
     if (arguments_.config) {
-      defaultArguments.push(`--config=${defaultConfig},${arguments_.config}`);
-    } else {
+      defaultArguments.push(`--config=${arguments_.config}`);
+    } else if (!arguments_.configFile) {
       defaultArguments.push(`--config=${defaultConfig}`);
     }
     if (arguments_.env) {

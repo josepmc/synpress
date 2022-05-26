@@ -8,6 +8,13 @@ let networkId = 1;
 let isTestnet = false;
 
 module.exports = {
+  getEnv: envVar => {
+    if (global.cy) {
+      debugger;
+      return cy.env(envVar);
+    }
+    return process.env[envVar];
+  },
   setNetwork: network => {
     if (network === 'mainnet') {
       networkName = 'mainnet';
@@ -43,7 +50,7 @@ module.exports = {
     if (process.env.SYNPRESS_LOCAL_TEST) {
       return '.';
     } else {
-      return path.dirname(require.resolve(`@synthetixio/synpress`));
+      return path.dirname(require.resolve(`@josepmc/synpress`));
     }
   },
   getMetamaskReleases: async version => {

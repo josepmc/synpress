@@ -18,6 +18,7 @@ const accountMenu = {
   createAccountButton: '.account-menu__item--clickable:nth-child(6)',
   importAccountButton: '.account-menu__item--clickable:nth-child(7)',
   settingsButton: '.account-menu__item--clickable:nth-child(11)',
+  lockButton: '.account-menu__lock-button',
 };
 
 const optionsMenu = {
@@ -55,6 +56,12 @@ const createAccount = {
   createButton: `${importAccountSelector} .btn-secondary`,
 };
 
+const recoveryPhraseBox = `.recovery-phrase-reminder`;
+const recoveryPhraseReminder = {
+  dialog: recoveryPhraseBox,
+  button: `${recoveryPhraseBox} button`,
+};
+
 module.exports.mainPageElements = {
   networkSwitcher,
   walletOverview,
@@ -65,4 +72,5 @@ module.exports.mainPageElements = {
   accountModal,
   importAccount,
   createAccount,
+  recoveryPhraseReminder,
 };

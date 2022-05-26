@@ -4,6 +4,7 @@
 [![Release CI](https://github.com/Synthetixio/synpress/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/Synthetixio/synpress/actions/workflows/release.yml)
 [![Discord](https://img.shields.io/discord/961408653502599171.svg?color=768AD4&label=discord&logo=https%3A%2F%2Fdiscordapp.com%2Fassets%2F8c9701b98ad4372b58f13fd9f65f966e.svg)](https://discordapp.com/channels/961408653502599171/)
 [![Twitter Follow](https://img.shields.io/twitter/follow/synpress_.svg?label=Synpress_&style=social)](https://twitter.com/Synpress_)
+
 #
 
 <p align="center">
@@ -58,10 +59,13 @@ project_dir
 
 ```js
 const path = require('path');
-const synpressPath = path.join(process.cwd(), '/node_modules/@synthetixio/synpress');
+const synpressPath = path.join(
+  process.cwd(),
+  '/node_modules/@synthetixio/synpress',
+);
 
 module.exports = {
-    extends: `${synpressPath}/.eslintrc.js`,
+  extends: `${synpressPath}/.eslintrc.js`,
 };
 ```
 
@@ -69,13 +73,19 @@ module.exports = {
 
 ```json
 {
-    "compilerOptions": {
-        "allowJs": true,
-        "baseUrl": "../../node_modules",
-        "types": ["cypress", "@types/puppeteer-core", "@synthetixio/synpress/support", "cypress-wait-until", "@testing-library/cypress"],
-        "outDir": "./output"
-    },
-    "include": ["**/*.*"]
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": "../../node_modules",
+    "types": [
+      "cypress",
+      "@types/puppeteer-core",
+      "@synthetixio/synpress/support",
+      "cypress-wait-until",
+      "@testing-library/cypress"
+    ],
+    "outDir": "./output"
+  },
+  "include": ["**/*.*"]
 }
 ```
 
@@ -95,14 +105,14 @@ There is a global [`before()`](https://github.com/synthetixio/synpress/blob/mast
 
 - passes welcome page
 - imports wallet
-- changes network (defaults to `kovan`) or creates custom network and changes to it (depending on your setup)
+- changes network (defaults to `goerli`) or creates custom network and changes to it (depending on your setup)
 - switches back to Cypress window and starts testing
 
 It requires environmental variable called `SECRET_WORDS` to be present in following format => `'word1, word2, etc..'` or private key in an environmental variable called `PRIVATE_KEY`.
 
-To change default network (`kovan`), you can use `NETWORK_NAME` environmental variable, for example: `NETWORK_NAME=rinkeby`.
+To change default network (`goerli`), you can use `NETWORK_NAME` environmental variable, for example: `NETWORK_NAME=rinkeby`.
 
-Available choices are: `mainnet`, `ropsten`, `kovan`, `rinkeby`, `goerli` and `localhost`.
+Available choices are: `mainnet`, `ropsten` (deprecated), `kovan` (deprecated), `rinkeby`, `goerli` and `localhost`.
 
 To create and switch to custom network at metamask setup phase, use these:
 

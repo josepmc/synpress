@@ -1,4 +1,5 @@
 const helpers = require('../helpers');
+const { getEnv } = helpers;
 const puppeteer = require('../commands/puppeteer');
 const metamask = require('../commands/metamask');
 const synthetix = require('../commands/synthetix');
@@ -115,10 +116,10 @@ module.exports = (on, config) => {
       return networkAdded;
     },
     changeMetamaskNetwork: async network => {
-      if (process.env.NETWORK_NAME && !network) {
-        network = process.env.NETWORK_NAME;
+      if (getEnv('NETWORK_NAME') && !network) {
+        network = getEnv('NETWORK_NAME');
       } else if (!network) {
-        network = 'kovan';
+        network = 'goerli';
       }
       const networkChanged = await metamask.changeNetwork(network);
       return networkChanged;
@@ -210,31 +211,28 @@ module.exports = (on, config) => {
     fetchMetamaskWalletAddress: async () => {
       return metamask.walletAddress();
     },
-    setupMetamask: async ({
+    setupMetamask: ({
       secretWordsOrPrivateKey,
-      network = 'kovan',
+      network = 'goerli',
       password,
+      actionOnLoggedIn = 'ignore',
     }) => {
-      if (process.env.NETWORK_NAME) {
-        network = process.env.NETWORK_NAME;
-      }
-      if (process.env.PRIVATE_KEY) {
-        secretWordsOrPrivateKey = process.env.PRIVATE_KEY;
-      }
-      if (process.env.SECRET_WORDS) {
-        secretWordsOrPrivateKey = process.env.SECRET_WORDS;
-      }
-      await metamask.initialSetup({
+      secretWordsOrPrivateKey =
+        getEnv('PRIVATE_KEY') ||
+        getEnv('SECRET_WORDS') ||
+        secretWordsOrPrivateKey;
+      network = getEnv('NETWORK_NAME') || network;
+      password = getEnv('METAMASK_PASSWORD') || password;
+      actionOnLoggedIn = getEnv('DEFAULT_ACTION') || actionOnLoggedIn;
+      return metamask.initialSetup({
         secretWordsOrPrivateKey,
         network,
         password,
+        actionOnLoggedIn,
       });
-      return true;
     },
     snxExchangerSettle: async ({ asset, walletAddress, privateKey }) => {
-      if (process.env.PRIVATE_KEY) {
-        privateKey = process.env.PRIVATE_KEY;
-      }
+      privateKey = getEnv('PRIVATE_KEY') || privateKey;
       const settled = await synthetix.settle({
         asset,
         walletAddress,
